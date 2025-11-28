@@ -12,28 +12,35 @@ export class ProductController {
   ) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  async create(@Body() createProductDto: CreateProductDto) {
+    const product = await this.productService.create(createProductDto);
+    this.clientService.emit("create", product)
+    return product
   }
 
   @Get()
   findAll() {
-    this.clientService.emit("findAll", "Hello from  backend1")
-    return this.productService.findAll();
+    const products = this.productService.findAll();
+    this.clientService.emit("findAll", products)
+    return products
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+     this.clientService.emit("findOne", id )
     return this.productService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    const product = await this.productService.update(+id, updateProductDto);
+    this.clientService.emit("update", {id, ...updateProductDto})
+    return product
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    this.clientService.emit("delete", id)
     return this.productService.remove(+id);
   }
 }

@@ -23,11 +23,10 @@ export class ProductService {
     return product 
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<{message: string}> {
+  async update(id: number, updateProductDto: UpdateProductDto) {
     const product = await this.productRepo.findOneBy({id})
     if (!product) throw new NotFoundException("Product not found")
-      await this.productRepo.update(id, updateProductDto)
-    return {message: "Updated product"}
+    return await this.productRepo.update(id, updateProductDto)
   }
 
   async remove(id: number): Promise<{message: string}> {

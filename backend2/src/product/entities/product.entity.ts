@@ -1,16 +1,21 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
-@Entity({ name: "product" })
+export type ProductDocument = HydratedDocument<Product>;
+
+@Schema()
 export class Product {
-  @PrimaryGeneratedColumn()
+    @Prop()
   id: number;
 
-  @Column()
+  @Prop()
   title: string;
 
-  @Column()
+  @Prop()
   description: string;
 
-  @Column()
+  @Prop()
   price: number;
 }
+
+export const ProductSchema = SchemaFactory.createForClass(Product);

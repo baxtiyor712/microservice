@@ -1,29 +1,15 @@
-import { Module } from '@nestjs/common';
-import { ProductService } from './product.service';
-import { ProductController } from './product.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { Module } from "@nestjs/common";
+import { ProductService } from "./product.service";
+import { ProductController } from "./product.controller";
+import { MongooseModule } from "@nestjs/mongoose";
+import { Product, ProductSchema } from "./entities/product.entity";
+import { ProductMicroserviceController } from "./product-microservice.controller";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product]),
-        ClientsModule.register([
-      {
-        name: 'PRODUCT_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://localhost:5672'],
-          queue: 'product_queue',
-          queueOptions: {
-            durable: false
-          },
-        },
-      },
-    ]),
-
+    MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
   ],
-  controllers: [ProductController],
+  controllers: [ProductController, ProductMicroserviceController],
   providers: [ProductService],
 })
 export class ProductModule {}

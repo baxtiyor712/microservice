@@ -1,39 +1,47 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
+import { InjectModel } from "@nestjs/mongoose";
+import { Product } from "./entities/product.entity";
+import { Model } from "mongoose";
 
 @Injectable()
 export class ProductService {
-  constructor(@InjectRepository(Product) private productRepo: Repository<Product>) {}
+  constructor(
+    @InjectModel(Product.name) private productModel: Model<Product>) { }
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const product = await this.productRepo.create(createProductDto)
-    return this.productRepo.save(product)
+    return this.productModel.create(createProductDto);
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepo.find()
+  async findAll(data: any): Promise<Product[]> {
+    const product = await this.productModel.find().exec();
+    return data
   }
 
   async findOne(id: number): Promise<Product> {
-    const product = await this.productRepo.findOneBy({id})
-    if (!product) throw new NotFoundException("Product not found")
-    return product 
+    const product = await this.productModel.find()
+    const foundedProduct = product.find((item) => item.id === id)
+    if (!foundedProduct) throw new NotFoundException("Product not found");
+    return foundedProduct
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<{message: string}> {
-    const product = await this.productRepo.findOneBy({id})
-    if (!product) throw new NotFoundException("Product not found")
-      await this.productRepo.update(id, updateProductDto)
-    return {message: "Updated product"}
+  async update(data: any) {
+    const product = await this.productModel.find()
+    const foundedProduct = product.find((item) => item.id === +data.id)
+    if (!foundedProduct) throw new NotFoundException("Product not found")
+
+    await this.productModel.updateOne({ _id: foundedProduct._id }, data);
+
+
+    return{
+      message: "Product updated",
+    };
   }
 
-  async remove(id: number): Promise<{message: string}> {
-    const product = await this.productRepo.findOneBy({id})
-    if (!product) throw new NotFoundException("Product not found")
-      await this.productRepo.delete(id)
-    return {message: "Deleted product"}
+  async remove(id: number) {
+     const product = await this.productModel.find()
+    const foundedProduct = product.find((item) => item.id === +id)
+    if (!foundedProduct) throw new NotFoundException("Product not found")
+    return this.productModel.deleteOne({ _id: foundedProduct._id});
   }
 }
